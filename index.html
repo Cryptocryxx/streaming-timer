@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="timer" id="timer">
+    <div class="t-title"></div>
+    <div class="t-time">--:--</div>
+    <div class="t-end"></div>
+  </div>
+  <div class="status" id="status" title="Verbindung"></div>
+  <script src="config.js"></script>
+  <script src="shared.js"></script>
+  <script>
+    let state = Timer.DEFAULT_STATE;
+    const root = document.getElementById("timer");
+    const dot = document.getElementById("status");
+    Timer.subscribe((s) => { if (!state.rev || s.rev >= state.rev) state = s; },
+                    (ok) => dot.classList.toggle("ok", ok));
+    const tick = () => Timer.render(root, state, Date.now());
+    setInterval(tick, 100); tick();
+    // Klick = Vollbild, Statuspunkt per Doppelklick ausblenden
+    root.addEventListener("click", () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    });
+  </script>
+</body>
+</html>
