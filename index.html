@@ -22,7 +22,8 @@
     Timer.subscribe((s) => { if (!state.rev || s.rev >= state.rev) state = s; },
                     (ok) => dot.classList.toggle("ok", ok));
     const tick = () => Timer.render(root, state, Date.now());
-    setInterval(tick, 100); tick();
+    const loop = () => { tick(); requestAnimationFrame(loop); };
+    loop();
     // Klick = Vollbild, Statuspunkt per Doppelklick ausblenden
     root.addEventListener("click", () => {
       if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();

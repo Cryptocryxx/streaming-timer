@@ -64,9 +64,20 @@
     root.style.setProperty("--c-warn", s.colorWarn);
     root.style.setProperty("--c-crit", s.colorCrit);
     root.classList.toggle("is-warn", warn);
-    root.classList.toggle("is-crit", crit && state.running || finished);
-    root.classList.toggle("is-crit-static", crit && !state.running && !finished);
+    root.classList.toggle("is-crit", crit);
+    root.classList.toggle("is-finished", finished);
     root.classList.toggle("is-flash", flash);
+
+    // Blinken der Ziffern: ab warnColorSec mit ~1 Hz, Frequenz steigt exponentiell bis ~8 Hz bei 0.
+    // Die Phase wird direkt aus der Restzeit berechnet (Integral der Frequenz) -> kein Zustand nötig.
+    const T = s.warnColorSec, F_MIN = 1, F_MAX = 8;
+    if (state.running && !finished && T > 0 && sec <= T) {
+      const k = Math.log(F_MAX / F_MIN) / T;
+      const phase = (F_MIN / k) * (Math.exp(k * (T - sec)) - 1);
+      timeEl.style.opacity = (phase % 1) < 0.5 ? "1" : "0.08";
+    } else {
+      timeEl.style.opacity = "";
+    }
 
     titleEl.textContent = s.title;
     titleEl.style.display = s.showTitle && s.title ? "" : "none";

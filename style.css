@@ -16,9 +16,10 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 .t-end { font-size: clamp(1.2rem, 4vw, 3.5rem); font-weight: 700; margin-top: 2vh; min-height: 1em; }
 
 .timer.is-warn { color: var(--c-warn); }
-.timer.is-crit-static { color: var(--c-crit); }
-.timer.is-crit { color: var(--c-crit); animation: blink-crit 1s steps(1) infinite; }
-.timer.is-flash { animation: blink-warn 1s steps(1) 3; } /* kurzes Blinken, 3 Impulse, danach wieder normal */
+.timer.is-crit { color: var(--c-crit); }
+/* nur die Ziffern blinken, Titel/Endtext bleiben stehen */
+.timer.is-finished .t-time { animation: blink-crit 1s steps(1) infinite; }
+.timer.is-flash .t-time { animation: blink-warn 1s steps(1) 3; } /* kurzes Blinken, 3 Impulse, danach wieder normal */
 
 @keyframes blink-crit { 0%,49% { opacity: 1; } 50%,100% { opacity: .08; } }
 @keyframes blink-warn { 0%,49% { color: var(--c-warn); opacity: 1; } 50%,100% { color: var(--c-normal); opacity: .15; } }

@@ -174,7 +174,8 @@ $("bTopic").onclick = () => {
 function init() {
   loadFields(); updateLink();
   const root = $("timer");
-  setInterval(() => Timer.render(root, state, Date.now()), 100);
+  const loop = () => { Timer.render(root, state, Date.now()); requestAnimationFrame(loop); };
+  loop();
 }
 </script>
 </body>
