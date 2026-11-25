@@ -6,6 +6,11 @@
     warnBlinkSec: 600,   // einmal orange blinken
     warnColorSec: 60,    // ab hier dauerhaft orange
     critBlinkSec: 10,    // ab hier rot blinkend
+    blinkMinHz: 0.25,    // Blinkfrequenz bei Beginn des roten Blinkens (pro Sekunde)
+    blinkMaxHz: 1,       // Blinkfrequenz bei 0 (exponentiell ansteigend)
+    blinkDim: 8,         // Deckkraft in % im "aus"-Zustand der Ziffern
+    endBlinkHz: 1,       // Blinken nach Ablauf (0 = aus)
+    flashCount: 3,       // Anzahl orange Impulse bei warnBlinkSec
     colorNormal: "#ffffff",
     colorWarn: "#ff9800",
     colorCrit: "#ff1744",
@@ -57,7 +62,7 @@
     const warn = !crit && sec <= s.warnColorSec;      // dauerhaft orange
     // einmaliges Blinken in den 5 Sekunden nach Unterschreiten der Schwelle (nur wenn Timer läuft)
     const flash = state.running && !crit && !warn &&
-      sec <= s.warnBlinkSec && sec > s.warnBlinkSec - 5;
+      sec <= s.warnBlinkSec && sec > s.warnBlinkSec - s.flashCount;
 
     root.style.setProperty("--bg", s.bg);
     root.style.setProperty("--c-normal", s.colorNormal);
@@ -65,19 +70,24 @@
     root.style.setProperty("--c-crit", s.colorCrit);
     root.classList.toggle("is-warn", warn);
     root.classList.toggle("is-crit", crit);
-    root.classList.toggle("is-finished", finished);
     root.classList.toggle("is-flash", flash);
 
-    // Blinken der Ziffern: ab warnColorSec mit ~1 Hz, Frequenz steigt exponentiell bis ~8 Hz bei 0.
+    root.style.setProperty("--dim", String(s.blinkDim / 100));
+    timeEl.style.animationIterationCount = String(s.flashCount);
+
+    // Rotes Blinken der Ziffern (nur Schrift, nie der Hintergrund): ab critBlinkSec,
+    // Frequenz steigt exponentiell von blinkMinHz auf blinkMaxHz bei 0.
     // Die Phase wird direkt aus der Restzeit berechnet (Integral der Frequenz) -> kein Zustand nötig.
-    const T = s.warnColorSec, F_MIN = 1, F_MAX = 8;
-    if (state.running && !finished && T > 0 && sec <= T) {
-      const k = Math.log(F_MAX / F_MIN) / T;
-      const phase = (F_MIN / k) * (Math.exp(k * (T - sec)) - 1);
-      timeEl.style.opacity = (phase % 1) < 0.5 ? "1" : "0.08";
-    } else {
-      timeEl.style.opacity = "";
+    const T = s.critBlinkSec, F0 = s.blinkMinHz, F1 = s.blinkMaxHz;
+    let dimmed = false;
+    if (finished) {
+      dimmed = s.endBlinkHz > 0 && ((now / 1000) * s.endBlinkHz) % 1 >= 0.5;
+    } else if (state.running && T > 0 && sec <= T && F0 > 0 && F1 > 0) {
+      const k = Math.log(F1 / F0) / T;
+      const phase = Math.abs(k) < 1e-9 ? F0 * (T - sec) : (F0 / k) * (Math.exp(k * (T - sec)) - 1);
+      dimmed = (phase % 1) >= 0.5;
     }
+    timeEl.style.opacity = dimmed ? String(s.blinkDim / 100) : "";
 
     titleEl.textContent = s.title;
     titleEl.style.display = s.showTitle && s.title ? "" : "none";

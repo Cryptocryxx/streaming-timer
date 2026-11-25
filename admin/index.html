@@ -73,6 +73,13 @@
         <label>Rot blinken ab (Sek.) <input type="number" id="sCrit" min="0"></label>
       </div>
       <div class="row">
+        <label>Orange Impulse (Anzahl) <input type="number" id="sFlashN" min="1" step="1"></label>
+        <label>Rot-Blinken Start (Hz) <input type="number" id="sHzMin" min="0" step="any"></label>
+        <label>Rot-Blinken Ende (Hz) <input type="number" id="sHzMax" min="0" step="any"></label>
+        <label>Dunkel-Deckkraft (%) <input type="number" id="sDim" min="0" max="100" step="1"></label>
+        <label>Blinken nach Ablauf (Hz, 0 = aus) <input type="number" id="sHzEnd" min="0" step="any"></label>
+      </div>
+      <div class="row">
         <label>Normal <input type="color" id="cNormal"></label>
         <label>Warnung <input type="color" id="cWarn"></label>
         <label>Kritisch <input type="color" id="cCrit"></label>
@@ -141,6 +148,7 @@ document.querySelectorAll("[data-add]").forEach((b) => b.onclick = () => { setRe
 // ---- Einstellungen ----
 const S = state.settings;
 const fields = { sTitle: "title", sEnd: "endText", sBlink: "warnBlinkSec", sWarn: "warnColorSec", sCrit: "critBlinkSec",
+                 sFlashN: "flashCount", sHzMin: "blinkMinHz", sHzMax: "blinkMaxHz", sDim: "blinkDim", sHzEnd: "endBlinkHz",
                  cNormal: "colorNormal", cWarn: "colorWarn", cCrit: "colorCrit", cBg: "bg" };
 function loadFields() {
   for (const [id, k] of Object.entries(fields)) $(id).value = state.settings[k];
@@ -174,8 +182,8 @@ $("bTopic").onclick = () => {
 function init() {
   loadFields(); updateLink();
   const root = $("timer");
-  const loop = () => { Timer.render(root, state, Date.now()); requestAnimationFrame(loop); };
-  loop();
+  const tick = () => Timer.render(root, state, Date.now());
+  setInterval(tick, 50); tick();
 }
 </script>
 </body>
